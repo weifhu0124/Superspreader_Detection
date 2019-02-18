@@ -3,13 +3,15 @@ import java.util.*;
 /* abstraction for Packets in a network that helps retrieve 
    the key fields from the packet*/
 public class Packet {
+    private String timestamp;
     private String srcip;
     private String dstip;
     private String srcPort;
     private String dstPort;
     private String protocol;
 
-    public Packet(String srcip, String dstip, String srcPort, String dstPort, String protocol) {
+    public Packet(String timestamp, String srcip, String dstip, String srcPort, String dstPort, String protocol) {
+        this.timestamp = timestamp;
         this.srcip = srcip;
         this.dstip = dstip;
         this.srcPort = srcPort;

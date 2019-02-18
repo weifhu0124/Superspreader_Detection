@@ -12,7 +12,7 @@ public class SSGroundTruth {
             while (scanner.hasNext()){
                 String packet_info = scanner.next();
                 String[] field = packet_info.split(",");
-                inputPackets.add(new Packet(field[0], field[1], field[2], field[3], field[4]));
+                inputPackets.add(new Packet(field[0], field[1], field[2], field[3], field[4], field[5]));
             }
         }
         catch (FileNotFoundException e){
@@ -34,7 +34,7 @@ public class SSGroundTruth {
     }
 
     public static void main(String[] args){
-        //ArrayList<Packet> input = read_csv_file("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/test.csv");
+        ArrayList<Packet> input = read_csv_file("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/test.csv");
         System.out.print("Done");
     }
 }
