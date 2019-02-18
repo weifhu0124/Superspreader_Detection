@@ -34,7 +34,7 @@ public class SSGroundTruth {
     }
 
     public static void main(String[] args){
-        ArrayList<Packet> input = read_csv_file("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/test.csv");
+        //ArrayList<Packet> input = read_csv_file("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/test.csv");
         System.out.print("Done");
     }
 }
