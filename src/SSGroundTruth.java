@@ -7,13 +7,16 @@ public class SSGroundTruth {
     // read packet input from source file
     private static ArrayList<Packet> read_csv_file(String filepath){
         ArrayList<Packet> inputPackets = new ArrayList<Packet>();
+        Converter convert = new Converter();
         try {
             Scanner scanner = new Scanner(new File(filepath));
             while (scanner.hasNext()){
                 String packet_info = scanner.nextLine();
                 packet_info = packet_info.trim();
                 String[] field = packet_info.split("\\s+");
-                inputPackets.add(new Packet(field[0], field[2], field[3], field[4], field[5]));
+                long srcip = convert.convertAddressToLong(field[0]);
+                long dstip = convert.convertAddressToLong(field[2]);
+                inputPackets.add(new Packet(srcip, dstip, field[3], field[4], field[5]));
             }
         }
         catch (FileNotFoundException e){
