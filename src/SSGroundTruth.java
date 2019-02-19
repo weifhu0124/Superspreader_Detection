@@ -26,19 +26,34 @@ public class SSGroundTruth {
     }
 
     // construct spreader hashtable from input array
-    private static HashMap<String, Integer> getSpreaders(ArrayList<Packet>inputPackets){
-        HashMap<String, Integer> spreaders = new HashMap<String, Integer>();
+    private static HashMap<Long, HashSet<Long>> getSpreaders(ArrayList<Packet>inputPackets){
+        HashMap<Long, HashSet<Long>> spreaders = new HashMap<Long, HashSet<Long>>();
+        for (Packet p: inputPackets){
+            if (!spreaders.containsKey(p.getSrcIp())){
+                spreaders.put(p.getSrcIp(), new HashSet<Long>());
+            }
+            spreaders.get(p.getSrcIp()).add(p.getDestIp());
+        }
         return spreaders;
     }
 
     // get top K superspreader
-    private static ArrayList<String> topKSuperspreader(HashMap<String, Integer> spreaders, int K){
-        ArrayList<String> topk = new ArrayList<String>();
+    private static ArrayList<Long> topKSuperspreader(HashMap<Long, HashSet<Long>> spreaders, int K){
+        ArrayList<Long> topk = new ArrayList<Long>();
+        for (Long src_ip : spreaders.keySet()){
+            if (spreaders.get(src_ip).size() >= K){
+                topk.add(src_ip);
+            }
+        }
+        Collections.sort(topk);
+        Collections.reverse(topk);
         return topk;
     }
 
     public static void main(String[] args){
         ArrayList<Packet> input = read_csv_file("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/test1.csv");
+        HashMap<Long, HashSet<Long>> spreaders = getSpreaders(input);
+        ArrayList<Long> topk = topKSuperspreader(spreaders, 3);
         System.out.print("Done");
     }
 }
