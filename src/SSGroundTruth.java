@@ -10,8 +10,8 @@ public class SSGroundTruth {
         try {
             Scanner scanner = new Scanner(new File(filepath));
             while (scanner.hasNext()){
-                String packet_info = scanner.next();
-                String[] field = packet_info.split(",");
+                String packet_info = scanner.nextLine();
+                String[] field = packet_info.split(" ");
                 inputPackets.add(new Packet(field[0], field[1], field[2], field[3], field[4]));
             }
         }
