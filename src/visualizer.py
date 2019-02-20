@@ -13,7 +13,11 @@ def load_data(path, spreaders):
 				continue
 			if entry[0] not in spreaders:
 				spreaders[entry[0]] = 0
-			spreaders[entry[0]] += int(entry[1])
+			try:
+				spreaders[entry[0]] += int(entry[1])
+			except:
+				error += 1
+				continue
 	print(error)
 	return spreaders
 
@@ -34,11 +38,11 @@ def get_count(spreaders):
 	return ks, counts, histo
 
 # get the counts of data with respect to time
-def get_count_by_time(k=200):
-	times = np.arange(1, 7, 1)
+def get_count_by_time(k=100):
+	times = np.arange(1, 11, 1)
 	counts = []
 	for t in times:
-		spreaders = load_data('tmp/spreaders-' + str(t-1) +'.txt', {})
+		spreaders = load_data('tmp/spreaders-' + str(t) +'.txt', {})
 		count = 0
 		for spread in spreaders:
 			if spreaders[spread] >= k:
@@ -63,11 +67,11 @@ def plotter(x, y, xlable, title, histo=None):
 
 # combine files
 def combine_files():
-	filenames = ['result/spreaders-0.txt']
-	counter = 1
-	while counter < 10:
-		filenames.append('result/spreaders-' + str(counter) + '.txt')
-		with open('tmp/spreaders-' + str(counter) + '.txt', 'w') as outfile:
+	filenames = ['data_after_split/500000_1.csv']
+	counter = 2
+	while counter < 11:
+		filenames.append('data_after_split/500000_' + str(counter - 1) + '.csv')
+		with open('data_tmp/spreaders-' + str(counter - 1) + '.txt', 'w') as outfile:
 			for fname in filenames:
 				with open(fname) as infile:
 					for line in infile:
@@ -86,12 +90,12 @@ def get_average():
 	print('Average ', avg.mean())
 
 if __name__ == '__main__':
-	#combine_files()
-	spreaders = {}
-	spreaders = load_data('result/spreaders.txt', spreaders)
-	ks, counts, histo = get_count(spreaders)
-	plotter(ks, counts, 'threshold k', 'Number of Superspreaders vs the threshold k', histo)
+	# combine_files()
+	# spreaders = {}
+	# spreaders = load_data('tmp/spreaders-9.txt', spreaders)
+	# ks, counts, histo = get_count(spreaders)
+	# plotter(ks, counts, 'threshold k', 'Number of Superspreaders vs the threshold k', histo)
 	t, counts = get_count_by_time()
-	plotter(t, counts, 'time in seconds', 'Number of 200-Superspreaders vs time interval')
-	#get_average()
+	plotter(t, counts, 'time in seconds', 'Number of 100-Superspreaders vs time interval')
+	# get_average()
 	print('done')

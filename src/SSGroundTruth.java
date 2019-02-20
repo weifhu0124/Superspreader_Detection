@@ -46,11 +46,11 @@ public class SSGroundTruth {
     }
 
     // get top K superspreader
-    private static ArrayList<Long> topKSuperspreader(HashMap<Long, HashSet<Long>> spreaders, int K){
+    private static ArrayList<Long> topKSuperspreader(HashMap<Long, HashSet<Long>> spreaders, int K, String filename){
         ArrayList<Long> topk = new ArrayList<Long>();
         Converter convert = new Converter();
         try{
-            PrintWriter writer = new PrintWriter("spreaders.txt");
+            PrintWriter writer = new PrintWriter(filename);
             for (Long src_ip : spreaders.keySet()){
                 if (spreaders.get(src_ip).size() >= K){
                     topk.add(src_ip);
@@ -65,16 +65,16 @@ public class SSGroundTruth {
     }
 
     public static void main(String[] args){
-        File dir = new File("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/data_after_split");
+        File dir = new File("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/data_tmp");
         File[] data = dir.listFiles();
-        HashMap<Long, HashSet<Long>> spreaders = new HashMap<Long, HashSet<Long>>();
         if (data != null) {
             // loop through all files for data
             for (File f : data) {
+                HashMap<Long, HashSet<Long>> spreaders = new HashMap<Long, HashSet<Long>>();
                 ArrayList<Packet> input = read_csv_file(f.getAbsolutePath());
                 spreaders = getSpreaders(input, spreaders);
+                ArrayList<Long> topk = topKSuperspreader(spreaders, 1, f.getName());
             }
-            ArrayList<Long> topk = topKSuperspreader(spreaders, 1);
         }
         System.out.print("Done");
     }
