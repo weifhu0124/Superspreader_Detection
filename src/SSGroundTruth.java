@@ -1,5 +1,6 @@
 import java.util.*;
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.FileNotFoundException;
 
 /* Simulation of Ground Truth for Superspreader Detection */
@@ -15,11 +16,10 @@ public class SSGroundTruth {
                 String packet_info = scanner.nextLine();
                 packet_info = packet_info.trim();
                 String[] field = packet_info.split("\\s+");
+                if (field.length < 6){
+                    continue;
+                }
                 if(field[3].equals("TCP") || field[3].equals("UDP")) {
-                    if (field.length < 6){
-                        System.out.println(packet_info);
-                        continue;
-                    }
                     long srcip = convert.convertAddressToLong(field[0]);
                     long dstip = convert.convertAddressToLong(field[2]);
                     inputPackets.add(new Packet(srcip, dstip, field[3], field[4], field[5]));
@@ -47,24 +47,39 @@ public class SSGroundTruth {
     }
 
     // get top K superspreader
-    private static ArrayList<Long> topKSuperspreader(HashMap<Long, HashSet<Long>> spreaders, int K){
+    private static ArrayList<Long> topKSuperspreader(HashMap<Long, HashSet<Long>> spreaders, int K, int counter){
         ArrayList<Long> topk = new ArrayList<Long>();
         Converter convert = new Converter();
-        for (Long src_ip : spreaders.keySet()){
-            if (spreaders.get(src_ip).size() >= K){
-                topk.add(src_ip);
-                System.out.println(convert.convertLongToAddress(src_ip) + " " + spreaders.get(src_ip).size());
+        try{
+            PrintWriter writer = new PrintWriter("spreaders-" + counter + ".txt");
+            for (Long src_ip : spreaders.keySet()){
+                if (spreaders.get(src_ip).size() >= K){
+                    topk.add(src_ip);
+                    writer.println((src_ip) + "," + spreaders.get(src_ip).size());
+                }
             }
+//            Collections.sort(topk);
+//            Collections.reverse(topk);
         }
-        Collections.sort(topk);
-        Collections.reverse(topk);
+        catch (FileNotFoundException fe){
+            fe.printStackTrace();
+        }
         return topk;
     }
 
     public static void main(String[] args){
-        ArrayList<Packet> input = read_csv_file("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/500000_1.csv");
-        HashMap<Long, HashSet<Long>> spreaders = getSpreaders(input);
-        ArrayList<Long> topk = topKSuperspreader(spreaders, 3);
+        File dir = new File("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/data_after_split");
+        File[] data = dir.listFiles();
+        int counter = 0;
+        if (data != null) {
+            // loop through all files for data
+            for (File f : data) {
+                ArrayList<Packet> input = read_csv_file(f.getAbsolutePath());
+                HashMap<Long, HashSet<Long>> spreaders = getSpreaders(input);
+                ArrayList<Long> topk = topKSuperspreader(spreaders, 1, counter);
+                counter += 1;
+            }
+        }
         System.out.print("Done");
     }
 }
