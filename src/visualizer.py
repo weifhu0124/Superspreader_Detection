@@ -74,12 +74,24 @@ def combine_files():
 						outfile.write(line)
 		counter += 1
 
+# calculate the average number of distinct hosts in each second
+def get_average():
+	avg = []
+	spreaders = load_data('tmp/spreaders-5.txt', {})
+	total = 0
+	for spread in spreaders:
+		total += spreaders[spread]
+	avg.append(total / len(spreaders))
+	avg = np.asarray(avg)
+	print('Average ', avg.mean())
+
 if __name__ == '__main__':
-	combine_files()
+	#combine_files()
 	spreaders = {}
 	spreaders = load_data('result/spreaders.txt', spreaders)
 	ks, counts, histo = get_count(spreaders)
 	plotter(ks, counts, 'threshold k', 'Number of Superspreaders vs the threshold k', histo)
 	t, counts = get_count_by_time()
 	plotter(t, counts, 'time in seconds', 'Number of 200-Superspreaders vs time interval')
+	#get_average()
 	print('done')
