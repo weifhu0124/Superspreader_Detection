@@ -35,8 +35,7 @@ public class SSGroundTruth {
     }
 
     // construct spreader hashtable from input array
-    private static HashMap<Long, HashSet<Long>> getSpreaders(ArrayList<Packet>inputPackets){
-        HashMap<Long, HashSet<Long>> spreaders = new HashMap<Long, HashSet<Long>>();
+    private static HashMap<Long, HashSet<Long>> getSpreaders(ArrayList<Packet>inputPackets, HashMap<Long, HashSet<Long>> spreaders){
         for (Packet p: inputPackets){
             if (!spreaders.containsKey(p.getSrcIp())){
                 spreaders.put(p.getSrcIp(), new HashSet<Long>());
@@ -47,19 +46,17 @@ public class SSGroundTruth {
     }
 
     // get top K superspreader
-    private static ArrayList<Long> topKSuperspreader(HashMap<Long, HashSet<Long>> spreaders, int K, int counter){
+    private static ArrayList<Long> topKSuperspreader(HashMap<Long, HashSet<Long>> spreaders, int K){
         ArrayList<Long> topk = new ArrayList<Long>();
         Converter convert = new Converter();
         try{
-            PrintWriter writer = new PrintWriter("spreaders-" + counter + ".txt");
+            PrintWriter writer = new PrintWriter("spreaders.txt");
             for (Long src_ip : spreaders.keySet()){
                 if (spreaders.get(src_ip).size() >= K){
                     topk.add(src_ip);
                     writer.println((src_ip) + "," + spreaders.get(src_ip).size());
                 }
             }
-//            Collections.sort(topk);
-//            Collections.reverse(topk);
         }
         catch (FileNotFoundException fe){
             fe.printStackTrace();
@@ -70,15 +67,14 @@ public class SSGroundTruth {
     public static void main(String[] args){
         File dir = new File("/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/data_after_split");
         File[] data = dir.listFiles();
-        int counter = 0;
+        HashMap<Long, HashSet<Long>> spreaders = new HashMap<Long, HashSet<Long>>();
         if (data != null) {
             // loop through all files for data
             for (File f : data) {
                 ArrayList<Packet> input = read_csv_file(f.getAbsolutePath());
-                HashMap<Long, HashSet<Long>> spreaders = getSpreaders(input);
-                ArrayList<Long> topk = topKSuperspreader(spreaders, 1, counter);
-                counter += 1;
+                spreaders = getSpreaders(input, spreaders);
             }
+            ArrayList<Long> topk = topKSuperspreader(spreaders, 1);
         }
         System.out.print("Done");
     }
