@@ -19,7 +19,7 @@ def load_data(path, spreaders):
 
 # get the counts based on k
 def get_count(spreaders):
-	ks = np.arange(25, 50, 1)
+	ks = np.arange(25, 35, 1)
 	counts = []
 	histo = []
 	for k in ks:
@@ -33,22 +33,53 @@ def get_count(spreaders):
 			histo.append(spreaders[spreader])
 	return ks, counts, histo
 
+# get the counts of data with respect to time
+def get_count_by_time(k=200):
+	times = np.arange(1, 7, 1)
+	counts = []
+	for t in times:
+		spreaders = load_data('tmp/spreaders-' + str(t-1) +'.txt', {})
+		count = 0
+		for spread in spreaders:
+			if spreaders[spread] >= k:
+				count += 1
+		counts.append(count)
+	return times, counts
+
 # plot the data
-def plotter(x, y, histo):
-	plt.title('Number of Superspreaders vs the threshold k')
+def plotter(x, y, xlable, title, histo=None):
+	plt.title(title)
 	plt.plot(x, y, '-o')
-	plt.xlabel('The threshold values for k')
+	plt.xlabel(xlable)
 	plt.ylabel('Number of Superspreaders')
 	plt.show()
-	plt.hist(histo, bins=50)
-	plt.title('Histogram for number of distinct host connections')
-	plt.xlabel('Number of distinct host connections')
-	plt.ylabel('Frequencies')
-	plt.show()
+	if histo != None:
+		plt.hist(histo, bins=50)
+		plt.title('Histogram for number of distinct host connections')
+		plt.xlabel('Number of distinct host connections')
+		plt.ylabel('Frequencies')
+		plt.show()
+
+
+# combine files
+def combine_files():
+	filenames = ['result/spreaders-0.txt']
+	counter = 1
+	while counter < 10:
+		filenames.append('result/spreaders-' + str(counter) + '.txt')
+		with open('tmp/spreaders-' + str(counter) + '.txt', 'w') as outfile:
+			for fname in filenames:
+				with open(fname) as infile:
+					for line in infile:
+						outfile.write(line)
+		counter += 1
 
 if __name__ == '__main__':
+	combine_files()
 	spreaders = {}
 	spreaders = load_data('result/spreaders.txt', spreaders)
 	ks, counts, histo = get_count(spreaders)
-	plotter(ks, counts, histo)
+	plotter(ks, counts, 'threshold k', 'Number of Superspreaders vs the threshold k', histo)
+	t, counts = get_count_by_time()
+	plotter(t, counts, 'time in seconds', 'Number of 200-Superspreaders vs time interval')
 	print('done')
