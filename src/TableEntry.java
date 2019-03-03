@@ -1,14 +1,14 @@
 import java.util.ArrayList;
 
-public class Table_Entry {
+public class TableEntry {
     private long sourceIP;
-    private ArrayList<Boolean> bitmap;
+    private boolean[] bitmap;
     private int counter;
 
     // constructor
-    public Table_Entry(long sourceIP) {
+    public TableEntry(long sourceIP, int bitmap_len) {
         this.sourceIP = sourceIP;
-        this.bitmap = new ArrayList<Boolean>();
+        this.bitmap = new boolean[bitmap_len];
         this.counter = 0;
     }
 
@@ -17,7 +17,7 @@ public class Table_Entry {
         return sourceIP;
     }
 
-    public ArrayList<Boolean> getBitmap() {
+    public boolean[] getBitmap() {
         return bitmap;
     }
 
@@ -26,7 +26,7 @@ public class Table_Entry {
     }
 
     /* Setters for the bitmap and counter */
-    public void setBitmap(ArrayList<Boolean> bitmap) {
+    public void setBitmap(boolean[] bitmap) {
         this.bitmap = bitmap;
     }
 
