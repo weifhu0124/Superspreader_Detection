@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 public class TableEntry {
     private long sourceIP;
     private boolean[] bitmap;
