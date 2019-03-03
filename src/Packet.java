@@ -5,16 +5,16 @@ import java.util.*;
 public class Packet {
     private long srcip;
     private long dstip;
-    private String srcPort;
-    private String dstPort;
-    private String protocol;
+//    private String srcPort;
+//    private String dstPort;
+//    private String protocol;
 
-    public Packet(long srcip, long dstip, String srcPort, String dstPort, String protocol) {
+    public Packet(long srcip, long dstip) {
         this.srcip = srcip;
         this.dstip = dstip;
-        this.srcPort = srcPort;
-        this.dstPort = dstPort;
-        this.protocol = protocol;
+//        this.srcPort = srcPort;
+//        this.dstPort = dstPort;
+//        this.protocol = protocol;
     }
 
     // get source ip of a packet
