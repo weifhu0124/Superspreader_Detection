@@ -29,7 +29,7 @@ public class DataParser {
         catch (FileNotFoundException e){
             e.printStackTrace();
         }
-        System.out.println(valid_packet);
+//        System.out.println(valid_packet);
         return packetStream;
     }
 

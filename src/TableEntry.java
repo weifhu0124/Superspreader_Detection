@@ -4,10 +4,10 @@ public class TableEntry {
     private int counter;
 
     // constructor
-    public TableEntry(long sourceIP, int bitmap_len) {
+    public TableEntry(long sourceIP,int bitmaplen) {
         this.sourceIP = sourceIP;
-        this.bitmap = new boolean[bitmap_len];
-        this.counter = 0;
+        this.bitmap = new boolean[bitmaplen];
+        this.counter = 1;
     }
 
     /* Getters for the internal variables */
@@ -30,5 +30,18 @@ public class TableEntry {
 
     public void setCounter(int counter) {
         this.counter = counter;
+    }
+
+    public void increCounter(){
+        this.counter += 1;
+    }
+
+    public void bitmapSet(long destip){
+        int position = HashFunction.Hash_Bitmap(destip,bitmap.length);
+        if (bitmap[position]== false){
+            bitmap[position] = true;
+            increCounter();
+        }
+
     }
 }

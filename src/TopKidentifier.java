@@ -27,7 +27,47 @@ public class TopKidentifier {
         HashMap<Long, HashSet<Long>> spreaders = SourceWithCount.getSpreaders(inputPacketStream);
         SourceCount = SourceWithCount.topKSuperspreader(spreaders, 1);
 
-        
+        //feed to packet to the table
+        int wholetablesize = 100;
+        int d = 4;
+        int bitmaplen = 20;
+
+        ArrayList<TableEntry> table = new ArrayList<TableEntry>(wholetablesize);
+        for (int i = 0; i < wholetablesize; i++) {
+            table.add(null);
+        }
+        HashFunction hash = new HashFunction(d,wholetablesize);
+        for(int i =0; i<inputPacketStream.size(); i++) {
+            long ip = inputPacketStream.get(i).getSrcIp();
+            int[] position = hash.index(ip);
+            Boolean flag = false;
+            for(int j =0; j<d; j++){
+                if(table.get(position[j]) == null){
+                    TableEntry entry = new TableEntry(ip,bitmaplen);
+                    table.get(position[j]).bitmapSet(inputPacketStream.get(i).getDestIp());
+                    flag = true; // indicates the packet finds its sourceip in the table;
+                    break;
+                }
+                else if(table.get(position[j]).getSourceIP()==ip){
+                    table.get(position[j]).bitmapSet(inputPacketStream.get(i).getDestIp());
+
+                }
+                else if(table.get(position[j]).getSourceIP()!=ip){
+                    int tmp = table.get(position[j]).getCounter();
+                    inputPacketStream.get(i).carry_min = tmp;
+                    inputPacketStream.get(i).min_stage = j;
+                }
+
+            }
+            if(flag == false){
+                //set the random bit;
+            }
+
+        }
+
+
+
+
 
 
     }

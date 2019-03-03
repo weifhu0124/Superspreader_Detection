@@ -5,6 +5,12 @@ import java.util.*;
 public class Packet {
     private long srcip;
     private long dstip;
+
+    //metadata
+    public int min_stage;
+    public int carry_min;
+    public boolean recirculated;
+
 //    private String srcPort;
 //    private String dstPort;
 //    private String protocol;

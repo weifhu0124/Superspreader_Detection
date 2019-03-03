@@ -1,5 +1,6 @@
 import java.net.InetAddress;
 
+// convert ip address to binary address which contains 32bits
 public class Converter {
     public static long convertAddressToLong(String address) {
         byte[] bytes = null;
