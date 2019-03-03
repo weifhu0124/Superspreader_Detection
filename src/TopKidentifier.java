@@ -40,26 +40,29 @@ public class TopKidentifier {
         for(int i =0; i<inputPacketStream.size(); i++) {
             long ip = inputPacketStream.get(i).getSrcIp();
             int[] position = hash.index(ip);
-            Boolean flag = false;
+            boolean flag = false;
             for(int j =0; j<d; j++){
                 if(table.get(position[j]) == null){
                     TableEntry entry = new TableEntry(ip,bitmaplen);
-                    table.get(position[j]).bitmapSet(inputPacketStream.get(i).getDestIp());
+                    // set bitmap and counter if necessary
+                    entry.bitmapSet(inputPacketStream.get(i).getDestIp());
+                    // insert into the table
+                    table.set(position[j], entry);
                     flag = true; // indicates the packet finds its sourceip in the table;
                     break;
                 }
                 else if(table.get(position[j]).getSourceIP()==ip){
+                    // set bitmap and counter if necessary
                     table.get(position[j]).bitmapSet(inputPacketStream.get(i).getDestIp());
 
                 }
                 else if(table.get(position[j]).getSourceIP()!=ip){
-                    int tmp = table.get(position[j]).getCounter();
-                    inputPacketStream.get(i).carry_min = tmp;
+                    inputPacketStream.get(i).carry_min = table.get(position[j]).getCounter();
                     inputPacketStream.get(i).min_stage = j;
                 }
 
             }
-            if(flag == false){
+            if(!flag){
                 //set the random bit;
             }
 
