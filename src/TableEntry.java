@@ -7,7 +7,7 @@ public class TableEntry {
     public TableEntry(long sourceIP,int bitmaplen) {
         this.sourceIP = sourceIP;
         this.bitmap = new boolean[bitmaplen];
-        this.counter = 1;
+        this.counter = 0;
     }
 
     /* Getters for the internal variables */
@@ -32,13 +32,13 @@ public class TableEntry {
         this.counter = counter;
     }
 
-    public void increCounter(){
+    private void increCounter(){
         this.counter += 1;
     }
 
     public void bitmapSet(long destip){
         int position = HashFunction.Hash_Bitmap(destip,bitmap.length);
-        if (bitmap[position]== false){
+        if (!bitmap[position]){
             bitmap[position] = true;
             increCounter();
         }
