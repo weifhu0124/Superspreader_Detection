@@ -1,16 +1,19 @@
 import java.util.*;
-
+import java.math.*;
 /* abstraction for Packets in a network that helps retrieve 
    the key fields from the packet*/
 public class Packet {
     private long srcip;
     private long dstip;
+    int bitmaplen = 20;
 
     //metadata
-    public int min_stage;
-    public int carry_min;
-    public boolean recirculated;
+    public boolean recirculated_min=false; // recirculate to replace the minimum value;
+    public int min_stage;// the stage containing the smallest count;
+    public int carry_min = Integer.MAX_VALUE;// smallest count experienced;
+    public boolean[] bitmap;
 
+    public boolean recirculated_dup=false; // recirculate to delete duplicated entry;
 //    private String srcPort;
 //    private String dstPort;
 //    private String protocol;
@@ -18,6 +21,7 @@ public class Packet {
     public Packet(long srcip, long dstip) {
         this.srcip = srcip;
         this.dstip = dstip;
+        this.bitmap = new boolean[bitmaplen];
 //        this.srcPort = srcPort;
 //        this.dstPort = dstPort;
 //        this.protocol = protocol;

@@ -31,47 +31,124 @@ public class TopKidentifier {
         int wholetablesize = 100;
         int d = 4;
         int bitmaplen = 20;
+        int recirculate_delay = 10;
 
+        // initialize the whole table in switch (supposed to be divided into d tables in reality)
         ArrayList<TableEntry> table = new ArrayList<TableEntry>(wholetablesize);
         for (int i = 0; i < wholetablesize; i++) {
             table.add(null);
         }
         HashFunction hash = new HashFunction(d,wholetablesize);
-        for(int i =0; i<inputPacketStream.size(); i++) {
-            long ip = inputPacketStream.get(i).getSrcIp();
+
+        // loop through all incoming packets
+        while(inputPacketStream.size()!=0){
+            Packet incoming = inputPacketStream.get(0);
+            // check recirculate bit in packet's metadata
+            long ip = incoming.getSrcIp();
             int[] position = hash.index(ip);
-            boolean flag = false;
-            for(int j =0; j<d; j++){
-                if(table.get(position[j]) == null){
-                    TableEntry entry = new TableEntry(ip,bitmaplen);
-                    // set bitmap and counter if necessary
-                    entry.bitmapSet(inputPacketStream.get(i).getDestIp());
-                    // insert into the table
-                    table.set(position[j], entry);
-                    flag = true; // indicates the packet finds its sourceip in the table;
+
+            if(incoming.recirculated_min){
+                int stage_number = incoming.min_stage;
+                int position_sub = position[stage_number];
+                TableEntry tmp = table.get(position_sub);
+                tmp.setSourceIP(incoming.getSrcIp());
+                tmp.bitmapSet(incoming.getDestIp());
+                table.set(position_sub,tmp);
+                inputPacketStream.remove(0);
+                //test
+                System.out.println("no recirculation for substitute");
+                continue;
+
+            }
+
+            if(incoming.recirculated_dup){
+                for(int i=0;i<d;i++){
+                    if(table.get(position[i]).getSourceIP() == incoming.getSrcIp()){
+                        TableEntry tmp = table.get(position[i]);
+                        boolean[] bitmap_tmp = tmp.getBitmap();
+                        for(int k =0;k<bitmaplen;k++){
+                            bitmap_tmp[k] = bitmap_tmp[k] || incoming.bitmap[k];
+                        }
+                        tmp.setBitmap(bitmap_tmp);
+                        tmp.bitmapTocounter();
+                        table.set(position[i],tmp);
+                        inputPacketStream.remove(0);
+                    }
                     break;
                 }
+                //test
+                System.out.println("no recirculation for duplication");
+                continue;
+            }
+
+            // flag to indicate whether entry having same source ip has been found;
+            boolean matched = false;
+            for(int j =0; j<d; j++){
+                if(table.get(position[j]) == null){
+                    if(!matched){
+                        TableEntry entry = new TableEntry(ip,bitmaplen);
+                        // set bitmap and counter if necessary
+                        entry.bitmapSet(incoming.getDestIp());
+                        // insert into the table
+                        table.set(position[j], entry);
+                        matched = true;
+                    }
+                }
+
                 else if(table.get(position[j]).getSourceIP()==ip){
-                    // set bitmap and counter if necessary
-                    table.get(position[j]).bitmapSet(inputPacketStream.get(i).getDestIp());
-
+                    if(!matched){
+                        // set bitmap and counter if necessary
+                        TableEntry entry = table.get(position[j]);
+                        entry.bitmapSet(incoming.getDestIp());
+                        table.set(position[j],entry);
+                        matched = true;
+                    }
+                    else{
+                        //find duplicate entry
+                        // copy bitmap to the metadata of this packet, and reset this entry to null;
+                       incoming.recirculated_dup = true;
+                       for(int k =0;k<bitmaplen;k++){
+                           incoming.bitmap[k] = incoming.bitmap[k] || table.get(position[j]).getBitmap()[k];
+                       }
+                       table.set(position[j],null);
+                    }
                 }
+
                 else if(table.get(position[j]).getSourceIP()!=ip){
-                    inputPacketStream.get(i).carry_min = table.get(position[j]).getCounter();
-                    inputPacketStream.get(i).min_stage = j;
+                    // fail to find an entry in which the source ip is the same as the source ip of the packet, record this entry's
+                    // count, bitmap and stage number.
+                    if(!matched){
+                        if(incoming.carry_min>table.get(position[j]).getCounter()){
+                            incoming.carry_min = table.get(position[j]).getCounter();
+                            for(int k =0;k<bitmaplen;k++){
+                                incoming.bitmap[k] = incoming.bitmap[k] || table.get(position[j]).getBitmap()[k];
+                            }
+                            incoming.min_stage = j;
+                        }
+                    }
+
                 }
-
             }
-            if(!flag){
-                //set the random bit;
+            if(!matched){
+                // generate an integer in [0,carry_min-1];
+                Random random = new Random();
+                int R = random.nextInt(incoming.carry_min);
+                if(R == 0){
+                    incoming.recirculated_min = true;
+                }
+                // add packet to a particular position in the input packet stream
+                // to simulate the recircualte delay.
+                inputPacketStream.add(recirculate_delay-1,incoming);
             }
+            inputPacketStream.remove(0);
 
+            //test
+            System.out.println("one packet processed");
         }
 
-
-
-
-
+        for(int l = 0; l<table.size(); l++){
+            System.out.println(table.get(l).getSourceIP()+' '+table.get(l).getCounter()+' ');
+        }
 
     }
 
