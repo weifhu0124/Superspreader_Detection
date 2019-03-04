@@ -37,7 +37,7 @@ public class TableEntry {
         this.counter = counter;
     }
 
-    public void increCounter(){
+    private void increCounter(){
         this.counter += 1;
     }
 
@@ -52,7 +52,7 @@ public class TableEntry {
 
     public void bitmapSet(long destip){
         int position = HashFunction.Hash_Bitmap(destip,bitmap.length);
-        if (bitmap[position]== false){
+        if (!bitmap[position]){
             bitmap[position] = true;
             increCounter();
         }

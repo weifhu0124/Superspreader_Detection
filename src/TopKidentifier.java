@@ -22,16 +22,33 @@ public class TopKidentifier {
             inputPacketStream = DataParser.parsedata_5("/Users/yangrui/data-130000/"+listOfFiles[i].getName(),inputPacketStream);
         }
 
+
+//        ArrayList<Packet> temp;
+//        temp = new ArrayList<Packet>(inputPacketStream.subList(0,10000));
+//        inputPacketStream = temp;
+
+
+        //parameters used in this experiment.
+        int wholetablesize = 100;
+        int d = 4;
+        int bitmaplen = 256;
+        int recirculate_delay = 10;
+
+
         // ground truth
         // get the list of Source Ip and its number of destinations. K indicates the number of its destinations are larger than K;
         HashMap<Long, HashSet<Long>> spreaders = SourceWithCount.getSpreaders(inputPacketStream);
-        SourceCount = SourceWithCount.topKSuperspreader(spreaders, 1);
 
-        //feed to packet to the table
-        int wholetablesize = 100;
-        int d = 4;
-        int bitmaplen = 20;
-        int recirculate_delay = 10;
+        SourceCount = SourceWithCount.topKSuperspreader(spreaders, 1);
+        Collections.sort(SourceCount, new SourceWithCountCompare());
+
+        ArrayList<SourceWithCount> SourceCounttemp;
+        SourceCounttemp = new ArrayList<SourceWithCount>(SourceCount.subList(0,wholetablesize));
+        SourceCount = SourceCounttemp;
+
+
+
+
 
         // initialize the whole table in switch (supposed to be divided into d tables in reality)
         ArrayList<TableEntry> table = new ArrayList<TableEntry>(wholetablesize);
@@ -56,7 +73,7 @@ public class TopKidentifier {
                 table.set(position_sub,tmp);
                 inputPacketStream.remove(0);
                 //test
-                System.out.println("no recirculation for substitute");
+//                System.out.println("recirculation for substitution");
                 continue;
 
             }
@@ -73,11 +90,11 @@ public class TopKidentifier {
                         tmp.bitmapTocounter();
                         table.set(position[i],tmp);
                         inputPacketStream.remove(0);
+                        break;
                     }
-                    break;
                 }
                 //test
-                System.out.println("no recirculation for duplication");
+//                System.out.println("recirculation for duplication");
                 continue;
             }
 
@@ -135,20 +152,39 @@ public class TopKidentifier {
                 int R = random.nextInt(incoming.carry_min);
                 if(R == 0){
                     incoming.recirculated_min = true;
+                    // add packet to a particular position in the input packet stream
+                    // to simulate the recircualte delay.
+                    if(inputPacketStream.size()<recirculate_delay){
+                        inputPacketStream.add(inputPacketStream.size()-1,incoming);
+                    }
+                    else {
+                        inputPacketStream.add(recirculate_delay-1,incoming);
+                    }
                 }
-                // add packet to a particular position in the input packet stream
-                // to simulate the recircualte delay.
-                inputPacketStream.add(recirculate_delay-1,incoming);
+
             }
             inputPacketStream.remove(0);
 
             //test
-            System.out.println("one packet processed");
+//            System.out.println("number of remaining packets"+inputPacketStream.size());
         }
 
         for(int l = 0; l<table.size(); l++){
-            System.out.println(table.get(l).getSourceIP()+' '+table.get(l).getCounter()+' ');
+            System.out.println("IP: "+table.get(l).getSourceIP()+" counter: "+table.get(l).getCounter());
         }
+
+        ArrayList<SourceWithCount> output = new ArrayList<SourceWithCount>(wholetablesize);
+        for(int i = 0; i<wholetablesize; i++){
+            long ip = table.get(i).getSourceIP();
+            int count = table.get(i).getCounter();
+            SourceWithCount tmp = new SourceWithCount(ip,count);
+            output.add(tmp);
+        }
+
+        Evaluate evaluate = new Evaluate(SourceCount,output);
+        System.out.println("accuracy= "+evaluate.accuracy());
+//        System.out.println("precise= "+evaluate.precision());
+//        System.out.println("recall= "+evaluate.recall());
 
     }
 

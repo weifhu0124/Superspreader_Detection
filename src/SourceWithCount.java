@@ -1,10 +1,13 @@
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class SourceWithCount implements Comparable<SourceWithCount>{
+public class SourceWithCount{
     long sourceId;
     int count;
 
@@ -13,9 +16,9 @@ public class SourceWithCount implements Comparable<SourceWithCount>{
         this.count = count;
     }
 
-    public int compareTo(SourceWithCount that){
-        return Integer.compare(this.count, that.count);
-    }
+//    public int compareTo(SourceWithCount that){
+//        return Integer.compare(this.count, that.count);
+//    }
 
 
     public static HashMap<Long, HashSet<Long>> getSpreaders(ArrayList<Packet>inputPackets){
@@ -43,3 +46,4 @@ public class SourceWithCount implements Comparable<SourceWithCount>{
     }
 
 }
+

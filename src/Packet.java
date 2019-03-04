@@ -5,7 +5,7 @@ import java.math.*;
 public class Packet {
     private long srcip;
     private long dstip;
-    int bitmaplen = 20;
+    int bitmaplen = 256;
 
     //metadata
     public boolean recirculated_min=false; // recirculate to replace the minimum value;
