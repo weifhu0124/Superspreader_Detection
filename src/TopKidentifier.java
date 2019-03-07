@@ -31,7 +31,7 @@ public class TopKidentifier {
         //parameters used in this experiment.
         int wholetablesize = 100;
         int d = 4;
-        int bitmaplen = 256;
+        int bitmaplen = 512;
         int recirculate_delay = 10;
 
 
@@ -67,8 +67,9 @@ public class TopKidentifier {
             if(incoming.recirculated_min){
                 int stage_number = incoming.min_stage;
                 int position_sub = position[stage_number];
-                TableEntry tmp = table.get(position_sub);
-                tmp.setSourceIP(incoming.getSrcIp());
+//                TableEntry tmp = table.get(position_sub);
+//                tmp.setSourceIP(incoming.getSrcIp());
+                TableEntry tmp = new TableEntry(incoming.getSrcIp(),bitmaplen);
                 tmp.bitmapSet(incoming.getDestIp());
                 table.set(position_sub,tmp);
                 inputPacketStream.remove(0);
@@ -94,7 +95,7 @@ public class TopKidentifier {
                     }
                 }
                 //test
-//                System.out.println("recirculation for duplication");
+                System.out.println("recirculation for duplication");
                 continue;
             }
 
@@ -149,8 +150,8 @@ public class TopKidentifier {
             if(!matched){
                 // generate an integer in [0,carry_min-1];
                 Random random = new Random();
-                int R = random.nextInt(incoming.carry_min);
-                if(R == 0){
+                int R = random.nextInt(incoming.carry_min*100);
+                if(R == 0 || incoming.carry_min == 1){
                     incoming.recirculated_min = true;
                     // add packet to a particular position in the input packet stream
                     // to simulate the recircualte delay.
@@ -161,7 +162,6 @@ public class TopKidentifier {
                         inputPacketStream.add(recirculate_delay-1,incoming);
                     }
                 }
-
             }
             inputPacketStream.remove(0);
 
