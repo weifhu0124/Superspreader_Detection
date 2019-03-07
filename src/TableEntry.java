@@ -3,6 +3,9 @@ public class TableEntry {
     private boolean[] bitmap;
     private int counter;
     private int bitmaplen;
+    private int NumHashFunction = 12;
+    private BloomFilter bf;
+
 
     // constructor
     public TableEntry(long sourceIP,int bitmaplen) {
@@ -10,6 +13,9 @@ public class TableEntry {
         this.bitmap = new boolean[bitmaplen];
         this.bitmaplen = bitmaplen;
         this.counter = 0;
+
+        bf = new BloomFilter(bitmaplen,NumHashFunction);
+//        this.bloomfilter = bf.map.clone();
     }
 
     /* Getters for the internal variables */
@@ -58,4 +64,15 @@ public class TableEntry {
         }
 
     }
+
+    public void BloomfilterSet(long destip){
+        Boolean exist = bf.check(destip);
+        if(!exist){
+            bf.add(destip);
+            increCounter();
+        }
+    }
+
+
+
 }

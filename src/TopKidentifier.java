@@ -31,9 +31,8 @@ public class TopKidentifier {
         //parameters used in this experiment.
         int wholetablesize = 100;
         int d = 4;
-        int bitmaplen = 512;
+        int bitmaplen = 128;
         int recirculate_delay = 10;
-
 
         // ground truth
         // get the list of Source Ip and its number of destinations. K indicates the number of its destinations are larger than K;
@@ -70,7 +69,7 @@ public class TopKidentifier {
 //                TableEntry tmp = table.get(position_sub);
 //                tmp.setSourceIP(incoming.getSrcIp());
                 TableEntry tmp = new TableEntry(incoming.getSrcIp(),bitmaplen);
-                tmp.bitmapSet(incoming.getDestIp());
+                tmp.BloomfilterSet(incoming.getDestIp());
                 table.set(position_sub,tmp);
                 inputPacketStream.remove(0);
                 //test
@@ -79,25 +78,25 @@ public class TopKidentifier {
 
             }
 
-            if(incoming.recirculated_dup){
-                for(int i=0;i<d;i++){
-                    if(table.get(position[i]).getSourceIP() == incoming.getSrcIp()){
-                        TableEntry tmp = table.get(position[i]);
-                        boolean[] bitmap_tmp = tmp.getBitmap();
-                        for(int k =0;k<bitmaplen;k++){
-                            bitmap_tmp[k] = bitmap_tmp[k] || incoming.bitmap[k];
-                        }
-                        tmp.setBitmap(bitmap_tmp);
-                        tmp.bitmapTocounter();
-                        table.set(position[i],tmp);
-                        inputPacketStream.remove(0);
-                        break;
-                    }
-                }
-                //test
-                System.out.println("recirculation for duplication");
-                continue;
-            }
+//            if(incoming.recirculated_dup){
+//                for(int i=0;i<d;i++){
+//                    if(table.get(position[i]).getSourceIP() == incoming.getSrcIp()){
+//                        TableEntry tmp = table.get(position[i]);
+//                        boolean[] bitmap_tmp = tmp.getBitmap();
+//                        for(int k =0;k<bitmaplen;k++){
+//                            bitmap_tmp[k] = bitmap_tmp[k] || incoming.bitmap[k];
+//                        }
+//                        tmp.setBitmap(bitmap_tmp);
+//                        tmp.bitmapTocounter();
+//                        table.set(position[i],tmp);
+//                        inputPacketStream.remove(0);
+//                        break;
+//                    }
+//                }
+//                //test
+//                System.out.println("recirculation for duplication");
+//                continue;
+//            }
 
             // flag to indicate whether entry having same source ip has been found;
             boolean matched = false;
@@ -106,7 +105,7 @@ public class TopKidentifier {
                     if(!matched){
                         TableEntry entry = new TableEntry(ip,bitmaplen);
                         // set bitmap and counter if necessary
-                        entry.bitmapSet(incoming.getDestIp());
+                        entry.BloomfilterSet(incoming.getDestIp());
                         // insert into the table
                         table.set(position[j], entry);
                         matched = true;
@@ -117,7 +116,7 @@ public class TopKidentifier {
                     if(!matched){
                         // set bitmap and counter if necessary
                         TableEntry entry = table.get(position[j]);
-                        entry.bitmapSet(incoming.getDestIp());
+                        entry.BloomfilterSet(incoming.getDestIp());
                         table.set(position[j],entry);
                         matched = true;
                     }
@@ -125,10 +124,10 @@ public class TopKidentifier {
                         //find duplicate entry
                         // copy bitmap to the metadata of this packet, and reset this entry to null;
                        incoming.recirculated_dup = true;
-                       for(int k =0;k<bitmaplen;k++){
-                           incoming.bitmap[k] = incoming.bitmap[k] || table.get(position[j]).getBitmap()[k];
-                       }
-                       table.set(position[j],null);
+//                       for(int k =0;k<bitmaplen;k++){
+//                           incoming.bitmap[k] = incoming.bitmap[k] || table.get(position[j]).getBitmap()[k];
+//                       }
+//                       table.set(position[j],null);
                     }
                 }
 
@@ -138,9 +137,9 @@ public class TopKidentifier {
                     if(!matched){
                         if(incoming.carry_min>table.get(position[j]).getCounter()){
                             incoming.carry_min = table.get(position[j]).getCounter();
-                            for(int k =0;k<bitmaplen;k++){
-                                incoming.bitmap[k] = incoming.bitmap[k] || table.get(position[j]).getBitmap()[k];
-                            }
+//                            for(int k =0;k<bitmaplen;k++){
+//                                incoming.bitmap[k] = incoming.bitmap[k] || table.get(position[j]).getBitmap()[k];
+//                            }
                             incoming.min_stage = j;
                         }
                     }
