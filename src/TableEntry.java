@@ -3,19 +3,16 @@ public class TableEntry {
     private boolean[] bitmap;
     private int counter;
     private int bitmaplen;
-    private int NumHashFunction = 12;
-    private BloomFilter bf;
+    private long timestamp;
 
 
     // constructor
-    public TableEntry(long sourceIP,int bitmaplen) {
+    public TableEntry(long sourceIP,int bitmaplen,long timestamp) {
         this.sourceIP = sourceIP;
         this.bitmap = new boolean[bitmaplen];
         this.bitmaplen = bitmaplen;
         this.counter = 0;
-
-        bf = new BloomFilter(bitmaplen,NumHashFunction);
-//        this.bloomfilter = bf.map.clone();
+        this.timestamp = timestamp;
     }
 
     /* Getters for the internal variables */
@@ -23,6 +20,9 @@ public class TableEntry {
         return sourceIP;
     }
 
+    public long getTimestamp(){
+        return timestamp;
+    }
     public boolean[] getBitmap() {
         return bitmap;
     }
@@ -39,6 +39,10 @@ public class TableEntry {
         this.bitmap = bitmap;
     }
 
+    public void setTimestamp(long timestamp){
+        this.timestamp=timestamp;
+    }
+
     public void setCounter(int counter) {
         this.counter = counter;
     }
@@ -47,32 +51,25 @@ public class TableEntry {
         this.counter += 1;
     }
 
-    public void bitmapTocounter(){
-        this.counter = 0;
-        for(int k =0;k<bitmaplen;k++){
-            if(this.bitmap[k]){
-                this.counter ++;
+//    public void bitmapTocounter(){
+//        this.counter = 0;
+//        for(int k =0;k<bitmaplen;k++){
+//            if(this.bitmap[k]){
+//                this.counter ++;
+//            }
+//        }
+//    }
+
+    public void BloomfilterSet(int[] index){
+        boolean flag = false;
+        for(int i = 0; i<index.length; i++){
+            if(!bitmap[index[i]]){
+                bitmap[index[i]] = true;
+                flag = true;
             }
         }
-    }
-
-    public void bitmapSet(long destip){
-        int position = HashFunction.Hash_Bitmap(destip,bitmap.length);
-        if (!bitmap[position]){
-            bitmap[position] = true;
-            increCounter();
-        }
-
-    }
-
-    public void BloomfilterSet(long destip){
-        Boolean exist = bf.check(destip);
-        if(!exist){
-            bf.add(destip);
+        if(flag){
             increCounter();
         }
     }
-
-
-
 }

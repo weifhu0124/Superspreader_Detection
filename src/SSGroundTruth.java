@@ -16,15 +16,15 @@ public class SSGroundTruth {
                 String packet_info = scanner.nextLine();
                  packet_info = packet_info.trim();
                 String[] field = packet_info.split("\\s+");
-                if (field.length < 6){
-                    continue;
-                }
-                if(field[3].equals("TCP") || field[3].equals("UDP")) {
-                    long srcip = convert.convertAddressToLong(field[0]);
-                    long dstip = convert.convertAddressToLong(field[2]);
-                    inputPackets.add(new Packet(srcip, dstip));
-                    valid_packet += 1;
-                }
+//                if (field.length < 6){
+//                    continue;
+//                }
+//                if(field[3].equals("TCP") || field[3].equals("UDP")) {
+//                    long srcip = convert.convertAddressToLong(field[0]);
+//                    long dstip = convert.convertAddressToLong(field[2]);
+//                    inputPackets.add(new Packet(srcip, dstip));
+//                    valid_packet += 1;
+//                }
             }
         }
         catch (FileNotFoundException e){
