@@ -12,6 +12,7 @@ public class Packet {
     public boolean recirculated_min=false; // recirculate to replace the minimum value;
     public int min_stage;// the stage containing the smallest count;
     public int carry_min = Integer.MAX_VALUE;// smallest count experienced;
+    public long carry_SrcIp;
     public long carry_time = Long.MAX_VALUE;
     public boolean[] bitmap;
 

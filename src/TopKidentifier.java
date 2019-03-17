@@ -27,7 +27,7 @@ public class TopKidentifier {
         //parameters used in this experiment.
         int wholetablesize = 96;
         int d = 4;
-        int bitmaplen = 32;
+        int bitmaplen = 128;
         int recirculate_delay = 10;
         int NumHash_bf = 12;
 
@@ -57,46 +57,72 @@ public class TopKidentifier {
 
         // loop through all incoming packets
         while(inputPacketStream.size()!=0) {
+            if(inputPacketStream.size()%10000 == 0) {
+                for (int l = 0; l < table.size(); l++) {
+                    if(table.get(l)!=null){
+                        System.out.println("IP: " + table.get(l).getSourceIP() + " counter: " + table.get(l).getCounter());
+                    }
+                    else{
+                        System.out.println("null");
+                    }
+                }
+                System.out.println();
+
+            }
             Packet incoming = inputPacketStream.get(0);
             // check recirculate bit in packet's metadata
-            long ip = incoming.getSrcIp();
-            long timestamp = incoming.getTimestamp();
-            int[] position = hash.index(ip);
 
+            // store source ip address, dest ip address and timestamp of the incoming packet.
+            long SrcIp = incoming.getSrcIp();
+            long DestIp = incoming.getDestIp();
+            long timestamp = incoming.getTimestamp();
+
+            // get hashed position
+            int[] position = hash.index(SrcIp);
+
+            // recirculated packet to replace the smallest one it has found.
             if(incoming.recirculated_min){
                 int stage_number = incoming.min_stage;
                 int position_sub = position[stage_number];
 //                TableEntry tmp = table.get(position_sub);
 //                tmp.setSourceIP(incoming.getSrcIp());
-                TableEntry tmp = new TableEntry(incoming.getSrcIp(),bitmaplen,incoming.getTimestamp());
-                int[] index = hash_bloomfilter.index(incoming.getDestIp());
+
+                // create new tableentry for recirculated packet.
+                TableEntry tmp = new TableEntry(SrcIp,bitmaplen,timestamp);
+                int[] index = hash_bloomfilter.index(DestIp);
                 tmp.BloomfilterSet(index);
                 table.set(position_sub,tmp);
                 inputPacketStream.remove(0);
                 //test
 //                System.out.println("recirculation for substitution");
                 continue;
-
             }
 
+            // recirculated packet to refresh the old entry.
             if (incoming.recirculated_dup) {
-                for (int i = 0; i < d; i++) {
-                    if (table.get(position[i]).getSourceIP() == incoming.getSrcIp()) {
-                        TableEntry tmp = table.get(position[i]);
+                int stage_number = incoming.min_stage;
+                int position_sub = position[stage_number];
+
+                if (table.get(position_sub)!=null && table.get(position_sub).getSourceIP() == SrcIp) {
+                    TableEntry tmp = new TableEntry(incoming.carry_SrcIp,bitmaplen,incoming.getTimestamp());
+                    tmp.setBitmap(incoming.bitmap);
+                    tmp.setCounter(incoming.carry_min);
+//                            System.out.println("recirculation for duplication and delete it successfully");
+                    }
 //                        boolean[] bitmap_tmp = tmp.getBitmap();
 //
 //                        for (int k = 0; k < bitmaplen; k++) {
 //                            bitmap_tmp[k] = bitmap_tmp[k] || incoming.bitmap[k];
 //                        }
-                        tmp.setBitmap(incoming.bitmap);
-                        tmp.setCounter(incoming.carry_min);
-                        table.set(position[i], tmp);
-                        inputPacketStream.remove(0);
-                        break;
-                    }
-                }
+//                        tmp.setBitmap(incoming.bitmap);
+//                        tmp.setCounter(incoming.carry_min);
+//                        table.set(position[i], tmp);
+
+//                System.out.println("recirculation for duplication");
+
+
+                inputPacketStream.remove(0);
                 //test
-                System.out.println("recirculation for duplication");
                 continue;
             }
 
@@ -105,30 +131,40 @@ public class TopKidentifier {
             for (int j = 0; j < d; j++) {
                 if (!matched) {
                     if (table.get(position[j]) == null) {
-                        TableEntry entry = new TableEntry(ip, bitmaplen, timestamp);
+                        TableEntry entry = new TableEntry(SrcIp, bitmaplen, timestamp);
                         // set bitmap and counter if necessary
-                        int[] index = hash_bloomfilter.index(incoming.getDestIp());
+                        int[] index = hash_bloomfilter.index(DestIp);
                         entry.BloomfilterSet(index);
                         // insert into the table
                         table.set(position[j], entry);
                         matched = true;
                     }
 
-                    else if (table.get(position[j]).getSourceIP() == ip) {
-                        int[] index = hash_bloomfilter.index(incoming.getDestIp());
+                    else if (table.get(position[j]).getSourceIP() == SrcIp) {
+                        int[] index = hash_bloomfilter.index(DestIp);
                         table.get(position[j]).BloomfilterSet(index);
-                        table.get(position[j]).setTimestamp(incoming.getTimestamp());
+                        table.get(position[j]).setTimestamp(timestamp);
                         matched = true;
                     }
 
-                    else if (table.get(position[j]).getSourceIP() != ip) {
+                    else if (table.get(position[j]).getSourceIP() != SrcIp) {
                         if (table.get(position[j]).getCounter() == 1) {
-                            TableEntry tmp = new TableEntry(incoming.getSrcIp(), bitmaplen, incoming.getTimestamp());
-                            int[] index = hash_bloomfilter.index(incoming.getDestIp());
+
+                            // clone data from it;
+                            incoming.min_stage = j;
+                            incoming.timestamp = table.get(position[j]).getTimestamp();
+                            incoming.carry_min = table.get(position[j]).getCounter();
+                            incoming.carry_SrcIp= table.get(position[j]).getSourceIP();
+                            incoming.bitmap = table.get(position[j]).getBitmap().clone();
+
+                            TableEntry tmp = new TableEntry(SrcIp, bitmaplen, timestamp);
+                            int[] index = hash_bloomfilter.index(DestIp);
                             tmp.BloomfilterSet(index);
                             table.set(position[j], tmp);
                             matched = true;
-                        } else if (table.get(position[j]).getCounter() > 1) {
+                        }
+
+                        else if (table.get(position[j]).getCounter() > 1) {
                             if (incoming.carry_min > table.get(position[j]).getCounter()) {
                                 incoming.carry_min = table.get(position[j]).getCounter();
                                 incoming.carry_time = table.get(position[j]).getTimestamp();
@@ -139,6 +175,7 @@ public class TopKidentifier {
                             }
                             if (incoming.carry_min == table.get(position[j]).getCounter() && incoming.carry_time > table.get(position[j]).getTimestamp()) {
                                 incoming.carry_min = table.get(position[j]).getCounter();
+                                incoming.carry_time = table.get(position[j]).getTimestamp();
                                 incoming.min_stage = j;
                             }
                         }
@@ -147,19 +184,21 @@ public class TopKidentifier {
 
                 else if (matched) {
                     if(table.get(position[j]) == null){
-                        //keep walking;
-
+                            TableEntry tmp = new TableEntry(incoming.carry_SrcIp,bitmaplen,incoming.getTimestamp());
+                            tmp.setBitmap(incoming.bitmap);
+                            tmp.setCounter(incoming.carry_min);
                     }
-                    else if (table.get(position[j]).getSourceIP() == ip) {
+                    else if (table.get(position[j]).getSourceIP() == SrcIp) {
                         incoming.recirculated_dup = true;
-                        int[] index = hash_bloomfilter.index(incoming.getDestIp());
+                        int[] index = hash_bloomfilter.index(DestIp);
                         table.get(position[j]).BloomfilterSet(index);
-                        incoming.carry_min = table.get(position[j]).getCounter();
-                        incoming.bitmap = table.get(position[j]).getBitmap().clone();
-                        table.set(position[j], null);
+                        table.get(position[j]).setTimestamp(timestamp);
+//                        incoming.carry_min = table.get(position[j]).getCounter();
+//                        incoming.bitmap = table.get(position[j]).getBitmap().clone();
+//                        table.set(position[j], null);
                     }
 
-                    else if (table.get(position[j]).getSourceIP() != ip) {
+                    else if (table.get(position[j]).getSourceIP() != SrcIp) {
                         //keep walking;
                     }
                 }

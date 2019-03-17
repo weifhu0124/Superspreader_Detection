@@ -36,7 +36,7 @@ public class TableEntry {
         this.sourceIP = sourceIP;
     }
     public void setBitmap(boolean[] bitmap) {
-        this.bitmap = bitmap;
+        this.bitmap = bitmap.clone();
     }
 
     public void setTimestamp(long timestamp){
