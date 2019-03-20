@@ -236,7 +236,7 @@ control MyEgress(inout headers hdr,
 				// if count is 1, directly replace without recirculate
 				if(tmp_existing_dest_count==1){
 					flow_table_ids_1.write(meta.hashed_address_s1, meta.my_sourceID);
-					tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr:meta.hashed_bloomfilter_addr]=1;
+					tmp_existing_bloomfilter=tmp_existing_bloomfilter | meta.hashed_bloomfilter_addr;
 					flow_table_bloomfilter_1.write(meta.hashed_address_s1, tmp_existing_bloomfilter);
 					flow_table_ctrs_1.write(meta.hashed_address_s1, 1);
 					meta.current_count=1;
@@ -323,7 +323,7 @@ control MyEgress(inout headers hdr,
 					// if count is 1, directly replace without recirculate
 					if(tmp_existing_dest_count==1){
 						flow_table_ids_3.write(meta.hashed_address_s3, meta.my_sourceID);
-						tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr:meta.hashed_bloomfilter_addr]=1;
+						tmp_existing_bloomfilter = tmp_existing_bloomfilter | meta.hashed_bloomfilter_addr;
 						flow_table_bloomfilter_3.write(meta.hashed_address_s3, tmp_existing_bloomfilter);
 						flow_table_ctrs_3.write(meta.hashed_address_s3, 1);
 						meta.current_count=1;
