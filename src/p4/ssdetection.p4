@@ -195,41 +195,6 @@ control MyEgress(inout headers hdr,
 		// Recirculated packets carried meta.min_stage and meta.count_min, so they themselves know what to do.
 	}
 
-	table naive_approximation {
-		// Goal: recirculate using probability 1/2^x nearest to 1/(carry_min+1), x between [1..63]
-		actions = {
-            NoAction();
-			clone_and_recirc_replace_entry();
-        }
-        key = {
-            meta.carry_min: ternary;
-			meta.random_bits: ternary;
-        }
-        size = 128;
-		default_action = NoAction();
-		const entries = {
-#include "entries_naive.p4"
-		}
-	}
-
-	table better_approximation {
-		// Goal: recirculate using probability 1/(2^x*T) nearest to 1/(carry_min+1), x between [1..63], T between [8..15]
-		actions = {
-            NoAction();
-			clone_and_recirc_replace_entry();
-        }
-        key = {
-            meta.carry_min_plus_one: ternary;
-			meta.random_bits: ternary;
-			meta.random_bits_short: range;
-        }
-        size = 128;
-		default_action = NoAction();
-		const entries = {
-#include "entries_better.p4"
-		}
-	}
-
 	apply {
 		commpute_source_id();
 		commpute_dest_id();
