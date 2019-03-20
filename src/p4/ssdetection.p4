@@ -260,8 +260,8 @@ control MyEgress(inout headers hdr,
 					flow_table_ids_2.write(meta.hashed_address_s2, meta.my_sourceID);
 					meta.current_count=tmp_existing_dest_count;
 					// update bloomfilter and counter only if the source does not map to a bit of 1
-					if (tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr:meta.hashed_bloomfilter_addr]==0){
-						tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr:meta.hashed_bloomfilter_addr]=1;
+					if (tmp_existing_bloomfilter & meta.hashed_bloomfilter_addr==0){
+						tmp_existing_bloomfilter = tmp_existing_bloomfilter | meta.hashed_bloomfilter_addr;
 						flow_table_bloomfilter_2.write(meta.hashed_address_s2, tmp_existing_bloomfilter);
 						flow_table_ctrs_2.write(meta.hashed_address_s2, tmp_existing_dest_count+1);
 						meta.current_count=tmp_existing_dest_count+1;
@@ -311,8 +311,8 @@ control MyEgress(inout headers hdr,
 					flow_table_ids_3.write(meta.hashed_address_s3, meta.my_sourceID);
 					meta.current_count=tmp_existing_dest_count;
 					// update bloomfilter and counter only if the source does not map to a bit of 1
-					if (tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr:meta.hashed_bloomfilter_addr]==0){
-						tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr:meta.hashed_bloomfilter_addr]=1;
+					if (tmp_existing_bloomfilter & meta.hashed_bloomfilter_addr==0){
+						tmp_existing_bloomfilter=tmp_existing_bloomfilter | meta.hashed_bloomfilter_addr;
 						flow_table_bloomfilter_3.write(meta.hashed_address_s3, tmp_existing_bloomfilter);
 						flow_table_ctrs_3.write(meta.hashed_address_s3, tmp_existing_dest_count+1);
 						meta.current_count=tmp_existing_dest_count+1;
