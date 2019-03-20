@@ -149,24 +149,24 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout custom_metadata_t meta,
 				 inout standard_metadata_t standard_metadata) {
-	register<bit<64> >(FLOW_TABLE_SIZE_EACH)  flow_table_ids_1;
+	register<bit<32> >(FLOW_TABLE_SIZE_EACH)  flow_table_ids_1;
 	register<bit<64> >(FLOW_TABLE_SIZE_EACH) flow_table_bloomfilter_1;
 	register<bit<64> >(FLOW_TABLE_SIZE_EACH)  flow_table_ctrs_1;
-	register<bit<64> >(FLOW_TABLE_SIZE_EACH)  flow_table_ids_2;
+	register<bit<32> >(FLOW_TABLE_SIZE_EACH)  flow_table_ids_2;
 	register<bit<64> >(FLOW_TABLE_SIZE_EACH) flow_table_bloomfilter_2;
 	register<bit<64> >(FLOW_TABLE_SIZE_EACH)  flow_table_ctrs_2;
-	register<bit<64> >(FLOW_TABLE_SIZE_EACH)  flow_table_ids_3;
+	register<bit<32> >(FLOW_TABLE_SIZE_EACH)  flow_table_ids_3;
 	register<bit<64> >(FLOW_TABLE_SIZE_EACH) flow_table_bloomfilter_3;
 	register<bit<64> >(FLOW_TABLE_SIZE_EACH)  flow_table_ctrs_3;
 
 	// compute source IP
 	action commpute_source_id () {
-		meta.my_sourceID[31:0]=hdr.ipv4.srcAddr;
+		meta.my_sourceID=hdr.ipv4.srcAddr;
 	}
 
 	// compute dest IP
 	action commpute_dest_id () {
-		meta.my_destID[31:0]=hdr.ipv4.dstAddr;
+		meta.my_destID=hdr.ipv4.dstAddr;
 	}
 
 	action compute_reg_index () {
@@ -201,7 +201,7 @@ control MyEgress(inout headers hdr,
 		compute_bloom_index();
 		compute_reg_index();
 		// source IP
-		bit<64> tmp_existing_source_id;
+		bit<32> tmp_existing_source_id;
 		// bloomfilter
 		bit<64> tmp_existing_bloomfilter;
 		// distinct destination count
