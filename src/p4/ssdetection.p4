@@ -398,19 +398,19 @@ control MyEgress(inout headers hdr,
 			}else{ //recirculate to remove duplicate
 				if(meta.min_stage==1){
 					flow_table_ids_1.write(meta.hashed_address_s1, 0);
-					bit<64> new_bloomfilter;
+					bit<64> new_bloomfilter=0;
 					flow_table_bloomfilter_1.write(meta.hashed_address_s1, new_bloomfilter);
 					flow_table_ctrs_1.write(meta.hashed_address_s1, 0);
 				}
 				if(meta.min_stage==2){
 					flow_table_ids_2.write(meta.hashed_address_s2, 0);
-					bit<64> new_bloomfilter;
+					bit<64> new_bloomfilter=0;
 					flow_table_bloomfilter_2.write(meta.hashed_address_s2, new_bloomfilter);
 					flow_table_ctrs_2.write(meta.hashed_address_s2, 0);	
 				}
 				if(meta.min_stage==3){
 					flow_table_ids_3.write(meta.hashed_address_s3, 0);
-					bit<64> new_bloomfilter;
+					bit<64> new_bloomfilter=0;
 					flow_table_bloomfilter_3.write(meta.hashed_address_s3, new_bloomfilter);
 					flow_table_ctrs_3.write(meta.hashed_address_s1, 0);	
 				}
