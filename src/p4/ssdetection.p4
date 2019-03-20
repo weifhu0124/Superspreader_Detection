@@ -221,9 +221,12 @@ control MyEgress(inout headers hdr,
 			if(tmp_existing_dest_count==0 || tmp_existing_source_id==meta.my_sourceID){
 				flow_table_ids_1.write(meta.hashed_address_s1, meta.my_sourceID);
 				meta.current_count=tmp_existing_dest_count;
+				bit<64> indexing=1;
+				indexing << meta.hashed_bloomfilter_addr;
 				// update bloomfilter and counter only if the source does not map to a bit of 1
-				if (tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr:meta.hashed_bloomfilter_addr]==0){
-					tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr:meta.hashed_bloomfilter_addr]=1;
+				if (tmp_existing_bloomfilter & indexing ==0){
+					// 00010 | 01000 = 01010 
+					tmp_existing_bloomfilter=tmp_existing_bloomfilter | indexing;
 					flow_table_bloomfilter_1.write(meta.hashed_address_s1, tmp_existing_bloomfilter);
 					flow_table_ctrs_1.write(meta.hashed_address_s1, tmp_existing_dest_count+1);
 					meta.current_count=tmp_existing_dest_count+1;
