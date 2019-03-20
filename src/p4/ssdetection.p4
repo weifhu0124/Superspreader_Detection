@@ -354,7 +354,7 @@ control MyEgress(inout headers hdr,
 			if(meta.already_matched==0){
 				// Ideally, we need to recirculate with probability 1/(carry_min*100).
 				// There are three options for probabilistic recircuation.
-				// 1. Perfect probability: use precisely 1/(carry_min+1) probabilty. May not be supported by all hardware.
+				// 1. Perfect probability: use precisely 1/(carry_min*100) probabilty. May not be supported by all hardware.
 				//#define PERFECT_PROBABILITY
 				#define BETTER_APPROXIMATE
 				#if defined(PERFECT_PROBABILITY)
