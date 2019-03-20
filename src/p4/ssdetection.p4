@@ -45,11 +45,11 @@ header ipv4_t {
 
 struct custom_metadata_t {
 	// source IP address
-	bit<32> my_sourceID
+	bit<32> my_sourceID;
 	// dest IP address
-	bit<32> my_destID
+	bit<32> my_destID;
 	// bloom filter
-	bit<64> bloomfilter
+	bit<64> bloomfilter;
 	// whether it is matched in table
 	bit<1> already_matched;
 
