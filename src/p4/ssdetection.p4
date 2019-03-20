@@ -277,7 +277,7 @@ control MyEgress(inout headers hdr,
 						meta.already_matched=1;
 					}else{
 						// save min_stage
-						if(meta.carry_min>tmp.tmp_existing_dest_count){
+						if(meta.carry_min>tmp_existing_dest_count){
 							meta.carry_min=tmp_existing_dest_count;
 							meta.min_stage=2;
 						}
@@ -328,7 +328,7 @@ control MyEgress(inout headers hdr,
 						meta.already_matched=1;
 					}else{
 						// save min_stage
-						if(meta.carry_min>tmp.tmp_existing_dest_count){
+						if(meta.carry_min>tmp_existing_dest_count){
 							meta.carry_min=tmp_existing_dest_count;
 							meta.min_stage=3;
 						}
