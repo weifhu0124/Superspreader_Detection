@@ -70,7 +70,7 @@ struct custom_metadata_t {
 	bit<32> hashed_address_s3;
 
 	// hashed destination address to bloomfilter index
-	bit<32> hashed_bloomfilter_addr;
+	bit<64> hashed_bloomfilter_addr;
 
 	bit<64> random_bits;
 	bit<12> random_bits_short;
@@ -379,19 +379,19 @@ control MyEgress(inout headers hdr,
 				// We replace the source IP in tables, and set counter to 1 and corresponding bloomfilter.
 				if(meta.min_stage==1){
 					flow_table_ids_1.write(meta.hashed_address_s1, meta.my_sourceID);
-					meta.bloomfilter[meta.hashed_bloomfilter_addr]=1;
+					meta.bloomfilter = meta.bloomfilter | meta.hashed_bloomfilter_addr;
 					flow_table_bloomfilter_1.write(meta.hashed_address_s1, meta.bloomfilter);
 					flow_table_ctrs_1.write(meta.hashed_address_s1, 1);
 				}
 				if(meta.min_stage==2){
 					flow_table_ids_2.write(meta.hashed_address_s2, meta.my_sourceID);
-					meta.bloomfilter[meta.hashed_bloomfilter_addr]=1;
+					meta.bloomfilter = meta.bloomfilter | meta.hashed_bloomfilter_addr;
 					flow_table_bloomfilter_2.write(meta.hashed_address_s2, meta.bloomfilter);
 					flow_table_ctrs_2.write(meta.hashed_address_s2, 1);			
 				}
 				if(meta.min_stage==3){
 					flow_table_ids_3.write(meta.hashed_address_s3, meta.my_sourceID);
-					meta.bloomfilter[meta.hashed_bloomfilter_addr]=1;
+					meta.bloomfilter = meta.bloomfilter | meta.hashed_bloomfilter_addr;
 					flow_table_bloomfilter_3.write(meta.hashed_address_s3, meta.bloomfilter);
 					flow_table_ctrs_3.write(meta.hashed_address_s3, 1);		
 				}
