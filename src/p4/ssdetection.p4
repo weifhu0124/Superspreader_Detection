@@ -272,7 +272,7 @@ control MyEgress(inout headers hdr,
 					// if count is 1, directly replace without recirculate
 					if(tmp_existing_dest_count==1){
 						flow_table_ids_2.write(meta.hashed_address_s2, meta.my_sourceID);
-						tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr]=1;
+						tmp_existing_bloomfilter=tmp_existing_bloomfilter|meta.hashed_bloomfilter_addr;
 						flow_table_bloomfilter_2.write(meta.hashed_address_s2, tmp_existing_bloomfilter);
 						flow_table_ctrs_2.write(meta.hashed_address_s2, 1);
 						meta.current_count=1;
