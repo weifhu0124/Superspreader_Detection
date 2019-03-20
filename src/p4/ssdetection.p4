@@ -203,7 +203,8 @@ control MyEgress(inout headers hdr,
 		// source IP
 		bit<32> tmp_existing_source_id;
 		// bloomfilter
-		bit<64> tmp_existing_bloomfilter;
+		register<bit<1> >(64)tmp_existing_bloomfilter;
+		bit<1> tmp_bloomfilter;
 		// distinct destination count
 		bit<64> tmp_existing_dest_count;
 
@@ -216,14 +217,16 @@ control MyEgress(inout headers hdr,
 			flow_table_ids_1.read(tmp_existing_source_id, meta.hashed_address_s1);
 			flow_table_bloomfilter_1.read(tmp_existing_bloomfilter, meta.hashed_address_s1);
 			flow_table_ctrs_1.read(tmp_existing_dest_count, meta.hashed_address_s1);
+			tmp_existing_bloomfilter.read(tmp_bloomfilter, meta.hashed_bloomfilter_addr);
 
 			// check if source IP maps to empty entry or entry with same source IP
 			if(tmp_existing_dest_count==0 || tmp_existing_source_id==meta.my_sourceID){
 				flow_table_ids_1.write(meta.hashed_address_s1, meta.my_sourceID);
 				meta.current_count=tmp_existing_dest_count;
 				// update bloomfilter and counter only if the source does not map to a bit of 1
-				if (tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr]==0){
-					tmp_existing_bloomfilter[meta.hashed_bloomfilter_addr]=1;
+				if (tmp_bloomfilter==0){
+					tmp_bloomfilter=1;
+					tmp_existing_bloomfilter.write(meta.hashed_bloomfilter_addr, tmp_bloomfilter);
 					flow_table_bloomfilter_1.write(meta.hashed_address_s1, tmp_existing_bloomfilter);
 					flow_table_ctrs_1.write(meta.hashed_address_s1, tmp_existing_dest_count+1);
 					meta.current_count=tmp_existing_dest_count+1;
