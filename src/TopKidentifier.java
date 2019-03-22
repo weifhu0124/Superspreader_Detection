@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 public class TopKidentifier {
 
     public static void main(String[] args){
+        // threshold for superspreaders
+        int threshold = 10;
 
         //start_time records the time when main function is called;
         long start_time = System.currentTimeMillis();
@@ -15,12 +17,12 @@ public class TopKidentifier {
         //SourceCount contains the number of different destinations for each source ip;
         ArrayList<SourceWithCount> SourceCount = new ArrayList<SourceWithCount>();
 
-        String file_path = args[0];
+        String file_path = "/Users/weifenghu/Desktop/MSCS/W19/CSE222A/superspreader/src/data_test/";
         File folder = new File(file_path);
         File[] listOfFiles = folder.listFiles();
         Arrays.sort(listOfFiles);
         for(int i=0;i<listOfFiles.length;i++){
-            inputPacketStream = DataParser.parsedata_5("/Users/yangrui/data-130000/"+listOfFiles[i].getName(),inputPacketStream);
+            inputPacketStream = DataParser.parsedata_5(file_path+listOfFiles[i].getName(),inputPacketStream);
         }
 
 
@@ -35,11 +37,10 @@ public class TopKidentifier {
         // get the list of Source Ip and its number of destinations. K indicates the number of its destinations are larger than K;
         HashMap<Long, HashSet<Long>> spreaders = SourceWithCount.getSpreaders(inputPacketStream);
 
-        SourceCount = SourceWithCount.topKSuperspreader(spreaders, 1);
+        SourceCount = SourceWithCount.topKSuperspreader(spreaders, 10);
         Collections.sort(SourceCount, new SourceWithCountCompare());
 
-        ArrayList<SourceWithCount> SourceCounttemp;
-        SourceCounttemp = new ArrayList<SourceWithCount>(SourceCount.subList(0,wholetablesize));
+        ArrayList<SourceWithCount> SourceCounttemp = new ArrayList<SourceWithCount>(SourceCount.subList(0,wholetablesize));
         SourceCount = SourceCounttemp;
 
 
@@ -57,18 +58,18 @@ public class TopKidentifier {
 
         // loop through all incoming packets
         while(inputPacketStream.size()!=0) {
-            if(inputPacketStream.size()%10000 == 0) {
-                for (int l = 0; l < table.size(); l++) {
-                    if(table.get(l)!=null){
-                        System.out.println("IP: " + table.get(l).getSourceIP() + " counter: " + table.get(l).getCounter());
-                    }
-                    else{
-                        System.out.println("null");
-                    }
-                }
-                System.out.println();
-
-            }
+//            if(inputPacketStream.size()%10000 == 0) {
+//                for (int l = 0; l < table.size(); l++) {
+//                    if(table.get(l)!=null){
+//                        System.out.println("IP: " + table.get(l).getSourceIP() + " counter: " + table.get(l).getCounter());
+//                    }
+//                    else{
+//                        System.out.println("null");
+//                    }
+//                }
+//                System.out.println();
+//
+//            }
             Packet incoming = inputPacketStream.get(0);
             // check recirculate bit in packet's metadata
 
@@ -324,14 +325,18 @@ public class TopKidentifier {
 
         ArrayList<SourceWithCount> output = new ArrayList<SourceWithCount>(wholetablesize);
         for(int i = 0; i<wholetablesize; i++){
-            long ip = table.get(i).getSourceIP();
-            int count = table.get(i).getCounter();
-            SourceWithCount tmp = new SourceWithCount(ip,count);
-            output.add(tmp);
+            if (table.get(i).getCounter() >= threshold) {
+                long ip = table.get(i).getSourceIP();
+                int count = table.get(i).getCounter();
+                SourceWithCount tmp = new SourceWithCount(ip, count);
+                output.add(tmp);
+            }
         }
 
         Evaluate evaluate = new Evaluate(SourceCount,output);
         System.out.println("accuracy= "+evaluate.accuracy());
+        System.out.println("Precision= "+evaluate.precision());
+        System.out.println("Recall= "+evaluate.recall());
         System.out.println("false negative = "+(float)evaluate.fn/(float)(evaluate.fn + evaluate.tp));
         long end_time = System.currentTimeMillis();
         System.out.println("run time = "+((float)end_time-(float)start_time));
