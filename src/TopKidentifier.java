@@ -6,7 +6,7 @@ public class TopKidentifier {
 
     public static void main(String[] args){
         // threshold for superspreaders
-        int threshold = 10;
+        int threshold = 30;
 
         //start_time records the time when main function is called;
         long start_time = System.currentTimeMillis();
